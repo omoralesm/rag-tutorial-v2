@@ -1,10 +1,14 @@
-from langchain_community.embeddings.ollama import OllamaEmbeddings
-from langchain_community.embeddings.bedrock import BedrockEmbeddings
+from llama_cpp import Llama
+import chromadb.utils.embedding_functions as embedding_functions
 
+class LlamaCppEmbeddingFunction(embedding_functions.EmbeddingFunction):
+    def __init__(self, model_path: str, embedding: bool = True):
+        self.model = Llama(model_path=model_path, embedding=embedding)
 
-def get_embedding_function():
-    embeddings = BedrockEmbeddings(
-        credentials_profile_name="default", region_name="us-east-1"
-    )
-    # embeddings = OllamaEmbeddings(model="nomic-embed-text")
-    return embeddings
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        embeddings = []
+        for text in texts:
+            # The create_embedding method returns a dictionary, extract the embedding vector
+            result = self.model.create_embedding(text)
+            embeddings.append(result['data'][0]['embedding'])
+        return embeddings

@@ -4,17 +4,18 @@ import shutil
 from langchain.document_loaders.pdf import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
-from get_embedding_function import get_embedding_function
+from get_embedding_function import LlamaCppEmbeddingFunction
 from langchain.vectorstores.chroma import Chroma
 
 
-CHROMA_PATH = "chroma"
-DATA_PATH = "data"
+CHROMA_PATH = "D:/LLM/Chroma"
+DATA_PATH = "D:/LLM/Data"
+MODEL_PATH = "D:/LLM/Models/all-MiniLM-L6-v2.F16.gguf"
 
 
 def main():
 
-    # Check if the database should be cleared (using the --clear flag).
+    # Check if the database should be cleared (using the --reset flag).
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
     args = parser.parse_args()
@@ -44,9 +45,11 @@ def split_documents(documents: list[Document]):
 
 
 def add_to_chroma(chunks: list[Document]):
+     # Initialize custom embedding function
+    llama_ef = LlamaCppEmbeddingFunction(model_path=MODEL_PATH)
     # Load the existing database.
     db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
+        persist_directory=CHROMA_PATH, embedding_function=llama_ef
     )
 
     # Calculate Page IDs.
