@@ -26,7 +26,10 @@ def main():
     # parser.add_argument("search_query", type=str, help="The query text.")
     # args = parser.parse_args()
     #search_query = args.search_query
-    query_rag("Which market serves Fabasoft?")
+    # query_rag("Which market serves Fabasoft?")
+    # query_rag("Since when is the Forrester ECM survey done?")
+    # query_rag("Which vendors are included in this assesment?")
+    query_rag("Which are the strong performers in the assesment?")
 
 
 def query_rag(search_query: str):
@@ -58,11 +61,13 @@ def query_rag(search_query: str):
     for chunk in stream:
         response += chunk['choices'][0]['delta'].get('content', '')
     
-    sources = [doc.metadata.get("id", None) for doc, _score in query_vector]
-    formatted_response = f"Response: {response}\nSources: {sources}"
+    # sources = [doc.metadata.get("id", None) for doc, _score in query_vector]
+    sources = ""
+    for doc, _score in query_vector:
+        sources += "Id: " + doc.metadata.get('id', None) + "\nContent: " + doc.page_content + "\nScore: " + str(_score) + "\n"
+    formatted_response = f"Response: {response}\nSources\n {sources}"
     print(formatted_response)
-    return stream
-
+    return response
 
 if __name__ == "__main__":
     main()
