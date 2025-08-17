@@ -12,3 +12,8 @@ class LlamaCppEmbeddingFunction(embedding_functions.EmbeddingFunction):
             result = self.model.create_embedding(text)
             embeddings.append(result['data'][0]['embedding'])
         return embeddings
+    
+    def embed_query(self, query: str) -> list[float]:
+        result = self.model.create_embedding(query)
+        return result['data'][0]['embedding']
+        

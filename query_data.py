@@ -1,11 +1,13 @@
 import argparse
 from langchain.vectorstores.chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
-from langchain_community.llms.ollama import Ollama
+import llama_cpp
 
-from get_embedding_function import get_embedding_function
+from get_embedding_function import LlamaCppEmbeddingFunction
 
-CHROMA_PATH = "chroma"
+CHROMA_PATH = "D:/LLM/Chroma"
+MODEL_EMBEDDING_PATH = "D:/LLM/Models/all-MiniLM-L6-v2.F16.gguf"
+MODEL_GPT_PATH = "D:/LLM/Models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf"
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -20,33 +22,46 @@ Answer the question based on the above context: {question}
 
 def main():
     # Create CLI.
-    parser = argparse.ArgumentParser()
-    parser.add_argument("query_text", type=str, help="The query text.")
-    args = parser.parse_args()
-    query_text = args.query_text
-    query_rag(query_text)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("search_query", type=str, help="The query text.")
+    # args = parser.parse_args()
+    #search_query = args.search_query
+    query_rag("Which market serves Fabasoft?")
 
 
-def query_rag(query_text: str):
+def query_rag(search_query: str):
     # Prepare the DB.
-    embedding_function = get_embedding_function()
+    embedding_function = LlamaCppEmbeddingFunction(model_path=MODEL_EMBEDDING_PATH)
     db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
     # Search the DB.
-    results = db.similarity_search_with_score(query_text, k=5)
+    query_vector = db.similarity_search_with_score(search_query, k=5)
+    
+    # Create the model.
+    model =  llama_cpp.Llama(model_path=MODEL_GPT_PATH, verbose=False, n_ctx=2048)
 
-    context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    prompt = prompt_template.format(context=context_text, question=query_text)
-    # print(prompt)
+    # Query the model with the context and the question.
+    # Use the stream parameter to get a streaming response.
+    # Note: The model's create_chat_completion method is used for chat-based models.
+    stream = model.create_chat_completion(
+        messages = [
+        {"role": "user", "content": PROMPT_TEMPLATE.format(
+            context = "\n\n---\n\n".join([doc.page_content for doc, _score in query_vector]),
+            question = search_query      
+        )}
+        ],
+        stream=True
+    )
+    
+    response = ""
 
-    model = Ollama(model="mistral")
-    response_text = model.invoke(prompt)
-
-    sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Response: {response_text}\nSources: {sources}"
+    for chunk in stream:
+        response += chunk['choices'][0]['delta'].get('content', '')
+    
+    sources = [doc.metadata.get("id", None) for doc, _score in query_vector]
+    formatted_response = f"Response: {response}\nSources: {sources}"
     print(formatted_response)
-    return response_text
+    return stream
 
 
 if __name__ == "__main__":
