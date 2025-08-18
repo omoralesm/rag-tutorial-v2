@@ -1,6 +1,4 @@
-import argparse
 from langchain.vectorstores.chroma import Chroma
-from langchain.prompts import ChatPromptTemplate
 import llama_cpp
 
 from get_embedding_function import LlamaCppEmbeddingFunction
@@ -25,7 +23,7 @@ def main():
     # parser = argparse.ArgumentParser()
     # parser.add_argument("search_query", type=str, help="The query text.")
     # args = parser.parse_args()
-    #search_query = args.search_query
+    # search_query = args.search_query
     # query_rag("Which market serves Fabasoft?")
     # query_rag("Since when is the Forrester ECM survey done?")
     # query_rag("Which vendors are included in this assesment?")
