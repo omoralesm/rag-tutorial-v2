@@ -5,14 +5,20 @@ from langchain.document_loaders.pdf import PyPDFDirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding_function import LlamaCppEmbeddingFunction
-from langchain.vectorstores.chroma import Chroma
+from chromadb.utils.embedding_functions import Chroma
 
-
+# This script populates a Chroma database with PDF documents.
+# It can also clear the database if the --reset flag is provided.
+# This path is where the Chroma database will be stored.
+# It should be a directory that exists on your system.
 CHROMA_PATH = "D:/LLM/Chroma"
+# This path is where the PDF documents are stored.
 DATA_PATH = "D:/LLM/Data"
+# This path is where the embedding model is stored.
 MODEL_PATH = "D:/LLM/Models/all-MiniLM-L6-v2.F16.gguf"
 
-
+# This is the main function that runs when the script is executed.
+# It checks if the database should be cleared and then populates it with documents.
 def main():
 
     # Check if the database should be cleared (using the --reset flag).
@@ -28,12 +34,15 @@ def main():
     chunks = split_documents(documents)
     add_to_chroma(chunks)
 
-
+# This function loads PDF documents from the specified directory.
+# It uses the PyPDFDirectoryLoader to load all PDF files in the DATA_PATH directory.
 def load_documents():
     document_loader = PyPDFDirectoryLoader(DATA_PATH)
     return document_loader.load()
 
-
+# This function splits the loaded documents into smaller chunks.
+# It uses the RecursiveCharacterTextSplitter to split each document into chunks of 800 characters with an overlap of 80 characters.
+# This is useful for creating smaller, manageable pieces of text for embedding.
 def split_documents(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
@@ -43,7 +52,8 @@ def split_documents(documents: list[Document]):
     )
     return text_splitter.split_documents(documents)
 
-
+# This function adds the document chunks to the Chroma database.
+# It initializes the LlamaCppEmbeddingFunction with the model path,
 def add_to_chroma(chunks: list[Document]):
      # Initialize custom embedding function
     llama_ef = LlamaCppEmbeddingFunction(model_path=MODEL_PATH)
@@ -66,6 +76,8 @@ def add_to_chroma(chunks: list[Document]):
         if chunk.metadata["id"] not in existing_ids:
             new_chunks.append(chunk)
 
+    # If there are new chunks, add them to the database.
+    # If there are no new chunks, print a message indicating that no new documents were added
     if len(new_chunks):
         print(f"👉 Adding new documents: {len(new_chunks)}")
         new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
@@ -77,7 +89,7 @@ def add_to_chroma(chunks: list[Document]):
 
 def calculate_chunk_ids(chunks):
 
-    # This will create IDs like "data/monopoly.pdf:6:2"
+    # This will create IDs like "data/[PDF file name].pdf:6:2"
     # Page Source : Page Number : Chunk Index
 
     last_page_id = None
@@ -103,11 +115,11 @@ def calculate_chunk_ids(chunks):
 
     return chunks
 
-
+# This function clears the Chroma database by deleting the directory where it is stored.
+# It uses shutil.rmtree to remove the directory and all its contents.
 def clear_database():
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
-
 
 if __name__ == "__main__":
     main()
