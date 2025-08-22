@@ -18,4 +18,9 @@ Provides functions to generate embeddings from text using a selected model. It a
 1. Use `populate_database.py` to add documents to the database.
 2. Query the database with `query_data.py` to retrieve relevant information.
 
+This code is based on these repos:
+
+https://github.com/pixegami/rag-tutorial-v2
+
+https://github.com/mneedham/LearnDataWithMark/tree/main/llamacpp-rag
 
