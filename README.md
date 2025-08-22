@@ -24,3 +24,13 @@ https://github.com/pixegami/rag-tutorial-v2
 
 https://github.com/mneedham/LearnDataWithMark/tree/main/llamacpp-rag
 
+Download the models here:
+
+### all-MiniLM-L6-v2.F16.gguf
+https://huggingface.co/leliuga/all-MiniLM-L6-v2-GGUF/tree/main
+### tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tree/main
+
+To install llama.cpp in Python you have to install Microsoft C++ Build Tools
+
+https://visualstudio.microsoft.com/es/visual-cpp-build-tools/
