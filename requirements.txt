@@ -1,4 +1,5 @@
 pypdf
 langchain
 chromadb # Vector storage
+llama-cpp
 
