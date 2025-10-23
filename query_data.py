@@ -1,8 +1,9 @@
 import argparse
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 import llama_cpp
-
 from get_embedding_function import LlamaCppEmbeddingFunction
+from colorama import Fore, Style, init
+
 # This script queries a Chroma database using a search query.
 # It uses the LlamaCppEmbeddingFunction to embed the query and retrieve relevant documents.
 # The path to the Chroma database.
@@ -25,12 +26,19 @@ Answer the question based on the above context: {question}
 """
 
 def main():
+    # Initialize colorama for colored output in the terminal.
+    init(autoreset=True)
     # Create CLI.
-    parser = argparse.ArgumentParser()
-    parser.add_argument("search_query", type=str, help="The query text.")
-    args = parser.parse_args()
-    search_query = args.search_query
-    query_rag(search_query)
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("search_query", type=str, help="The query text.")
+    # args = parser.parse_args()
+    # search_query = args.search_query
+    while True:
+        search_query = input(f"{Fore.GREEN}Escribe tu pregunta: {Fore.WHITE}")
+        # Run the query.
+        if search_query.lower() in ["exit", "quit"]:
+            break
+        query_rag(search_query)
     # query_rag("Which market serves Fabasoft?")
     # query_rag("Since when is the Forrester ECM survey done?")
     # query_rag("Which vendors are included in this assesment?")
@@ -70,8 +78,8 @@ def query_rag(search_query: str):
     # Print the response and the sources, including the score.
     sources = ""
     for doc, _score in query_vector:
-        sources += "Id: " + doc.metadata.get('id', None) + "\nContent: " + doc.page_content + "\nScore: " + str(_score) + "\n"
-    formatted_response = f"Response: {response}\nSources\n {sources}"
+        sources += f"{Fore.WHITE}Id: " + doc.metadata.get('id', None) + f"\n{Fore.BLUE}Content: " + doc.page_content + f"\n{Fore.RED}Score: " + str(_score) + "\n"
+    formatted_response = f"{Fore.GREEN}Response: {Fore.WHITE}{response}\nSources\n {sources}"
     print(formatted_response)
     # return response
 
